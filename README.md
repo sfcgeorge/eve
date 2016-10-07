@@ -1,36 +1,36 @@
-# Rack
+# Potential Bundler Secondary Source Security Issue
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rack`. To experiment with that code, run `bin/console` for an interactive prompt.
+See my [other repo](https://github.com/sfcgeorge/gem_clash) for a sample app showing this flaw.
 
-TODO: Delete this and the text above, and describe your gem
+Even if a secondary source is limited to a single gem, Bundler will mistakenly look at all sources for every non limited gem. This could pose a security issue depending on how you use secondary sources and where trust is.
 
-## Installation
+In practice I can't think of real world scenarios where this would cause any more risk than say a gem author inserting malicious code into their own gem, but it's something to think about.
 
-Add this line to your application's Gemfile:
+I was alerted me to this by [Steve's blog post](http://collectiveidea.com/blog/archives/2016/10/06/bundlers-multiple-source-security-vulnerability/).
+
+## Gemfile
 
 ```ruby
-gem 'rack'
+source "https://rubygems.org"
+
+gem "rack"
+gem "eve", git: "https://github.com/sfcgeorge/eve.git"
 ```
 
-And then execute:
+## bundle
 
-    $ bundle
+```sh
+Fetching https://github.com/sfcgeorge/eve.git
+Fetching gem metadata from https://rubygems.org/..........
+Fetching version metadata from https://rubygems.org/.
+Resolving dependencies...
+Using eve 1.0.0 from https://github.com/sfcgeorge/eve.git (at master@303e489)
+Using rack 9.9.9 from https://github.com/sfcgeorge/eve.git (at master@303e489)
+Using bundler 1.13.2
+Bundle complete! 2 Gemfile dependencies, 3 gems now installed.
+Use `bundle show [gemname]` to see where a bundled gem is installed.
+Post-install message from rack:
+😈 EVIL fake Rack just installed! 👿
+```
 
-Or install it yourself as:
-
-    $ gem install rack
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rack.
-
+Note how "rack" is installed from my malicious repo even though we'd expect it to come from RubyGems!
