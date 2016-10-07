@@ -1,3 +1,3 @@
 module Rack
-  VERSION = "0.1.0"
+  VERSION = "9.9.9"
 end
